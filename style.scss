@@ -1,0 +1,97 @@
+$gaps: 48px; //set grid gap and gutter sizing.
+
+body {overflow-x: hidden;} //for small screen pattern, oversized element used
+
+.a-img { //set images to respond with maximum sizing after gap, gutter, margins.
+  //size to full width minus margins - oversized parent makes auto not work.
+  width: calc(100vw - (45 * 2));
+  height:auto;
+  -webkit-transition: 1s ease-in-out;  //sets time for animation of images - webkit
+  -moz-transition: 1s ease-in-out;  //sets time for animation of images - mozilla
+  -o-transition: 1s ease-in-out;  //sets time for animation of images - opera
+  transition: 1s ease-in-out;  //sets time for animation of images
+}
+
+.m-image-grid-container {
+  display: grid;
+  perspective: 1px; //helps with animation effects
+  transform-style: preserve-3d; //helps with animation effects
+  width: auto; //set container to stretch viewport width
+  height: auto; // and auto adjust to length based on images.
+  grid-gap: $gaps; //set shared gap, gutter, and margins for
+  margin: $gaps; //consistant spacing around images.
+  grid-template-rows: auto; //allow auto-generated rows as needed for images.
+  grid-template-columns: repeat(3, 1fr); //for small screen, use 1 column width
+  position: relative; //allows for element repositioning
+  right: 96vw; //centering oversized element
+}
+
+.a-img:nth-child(4n+1) {
+  grid-column-start: 2; // used for double left images
+}
+
+.a-img:nth-child(4n+5) {
+  grid-column-end: 2; // used for double right images
+}
+
+
+@media only screen and (min-width: 600px) { //css as needed for medium screens
+
+  .m-image-grid-container {
+    right: 0;
+    grid-template-columns: repeat(2, 1fr); // start using 2 column instead of one.
+  }
+
+  .a-img {
+    width: 100%;
+  }
+
+  .a-img:nth-child(4n+1) {
+    grid-column-start: auto; //zero out from other breakpoint.
+  }
+
+  .a-img:nth-child(4n+5) {
+    grid-column-end: auto; //zero out from other breakpoint.
+  }
+
+  .a-img:nth-child(2n+4), .a-img:nth-child(3n+6), .a-img:nth-child(3n+4) {
+    margin-top: 0%; //zero out from other breakpoint.
+  }
+
+  .a-img:nth-child(2){
+    margin-top: 40%;
+  }
+
+  .a-img:nth-child(2n+3){
+    margin-top: -40%;
+  }
+
+}
+
+@media only screen and (min-width: 1000px) { // css for large screens.
+
+  .m-image-grid-container {
+    grid-template-columns: repeat(3, 1fr); // from 2 columns to 3.
+  }
+
+  .a-img:nth-child(2n+3){ //zero out from other breakpoint.
+    margin-top: 0;
+  }
+
+  .a-img:nth-child(2){ //select 2nd column of images
+    margin-top: 80%;
+  }
+
+  .a-img:nth-child(3n+4){ //counter margin to fix pattern.
+    margin-top: -80%;
+  }
+
+  .a-img:nth-child(3){ //select 3rd column of images.
+    margin-top: 40%;
+  }
+
+  .a-img:nth-child(3n+6){ //counter margin to fix pattern.
+    margin-top: -40%;
+  }
+
+}
