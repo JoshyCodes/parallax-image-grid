@@ -1,9 +1,9 @@
 body {
-
+  overflow-x: hidden;
 }
 
 .a-img {
-  width: calc(100vw - 80px);
+  width: calc(100vw - (45 * 2));
   height: auto;
   -webkit-transition: 1s ease-in-out;
   -moz-transition: 1s ease-in-out;

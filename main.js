@@ -1,101 +1,56 @@
 const imageGrid = document.querySelector('.js-dynamic-image-grid');
-const animationSpeedSmall = 20; //100 is full speed or 1x for small screen
-const animationSpeedMedium = 20; //100 is full speed or 1x for medium screen
-const animationSpeedLarge = 20; //100 is full speed or 1x for large screen
+const mediumBreak = 601; //breakpoint as min-width for Medium screens
+const largeBreak = 1000; //breakpoint as min-width for Large screens
+var state = ""; //global variable to record screen state
+var rellax = new Rellax('.rellax', {speed: 0}); //activate rellax.js for parallax
 
-//***** find element size + location
-function getlLocation(){
-    console.log('firing now');
-    //get coodinates for parent element
-    let rect = imageGrid.getBoundingClientRect();
-    //adjust starting point due to viewport
-    let start = rect.top - window.innerHeight;
-    //adjust end point due to viewport
-    let end = rect.bottom - window.innerHeight;
-    //finding the multiplier
-    let sizeVariant = Math.trunc((end - start) / 100);
-    let multiplier = Math.trunc(Math.abs(start) / sizeVariant);
-    //break down to decimal for speed control in animation
-    multiplier = multiplier / 100;
-    //send values to next step, dumping unneeded values
-    findDistance(start, end, multiplier);
-}
 
-//***** compare current scroll to element location
-function findDistance(start, end, multiplier){
-    //verify scroll has entered element area
-    if(start < 0 && end > 0){
-        //get current width of screen viewport
-        let windowSize = window.innerWidth;
-        //test for screen size
-        if (windowSize < 601){
-            handleSmallScreen(multiplier);
-        } else if (windowSize < 1001) {
-            handleMediumScreen(multiplier);
+function isState(){
+        let screenX = window.innerWidth; //get current screen width
+        if (screenX < mediumBreak){ //test for screen size then send to comparison function
+            checkState("small");
+        } else if (screenX < largeBreak){
+            checkState("medium");
         } else {
-            handleLargeScreen(multiplier);
+            checkState("large");
         }
+    }
+
+function checkState(newState){
+    if (newState !== state){ //compare current screen state to previous
+        state = newState;   //set gloabal state variable to current state
+        restartRellax();    //restart the rellax.js system
     }
 }
 
-//*****Template strings were not working at time of trial,
-//*****will revisit soon. Wanted the rest of funtionality first.
-
-function handleSmallScreen(multiplier){
-    //set multiplier as per animation speed setting
-    multiplier = multiplier * animationSpeedSmall;
-    //innerhtml for dev use only - filler for time
-    document.getElementById('perc').innerHTML = multiplier;
-
-
-    //************
-    //after css pattern is complete,
-    //animate transform +/- 100vw on scroll %
-    //************
-
-
+function restartRellax() {
+    stopRellax();   //stop current rellax settings and return to normal positions
+    if ( state == "medium"){   //retreive screen state
+        let rightColumnImages = document.querySelectorAll(".a-img:nth-child(2n+2)");    //get element array
+        rightColumnImages.forEach( el =>    //set speed attribute for appropriate images
+            el.setAttribute('data-rellax-speed', '-0.5')
+        )
+    } else if ( state == "large"){  //retreive screen state
+        let leftColumnImages = document.querySelectorAll(".a-img:nth-child(3n+1)"); //get element arrays
+        let rightColumnImages = document.querySelectorAll(".a-img:nth-child(3n+3)");// for the two outside columns
+        leftColumnImages.forEach( el => //set speed attribute for appropriate images
+            el.setAttribute('data-rellax-speed', '-0.5')
+        )
+        rightColumnImages.forEach( el =>    //set speed attribute for appropriate images
+            el.setAttribute('data-rellax-speed', '-0.3')
+        )
+    }
+    rellax.refresh();   //refresh rellax.js for new variables
 }
 
-//function for handling medium screen actions
-function handleMediumScreen(multiplier){
-    //set multiplier as per animation speed setting
-    multiplier = multiplier * animationSpeedMedium;
-
-    //create array of images needing animated
-    let leftColumnImages = document.querySelectorAll(".a-img:nth-child(2n+1)");
-    let rightColumnImages = document.querySelectorAll(".a-img:nth-child(2n+2)");
-
-    // Pass ooff elements to parallax function
-    giveParallax( leftColumnImages, multiplier);
-    giveParallax( rightColumnImages, (multiplier * -1 ) );
+function stopRellax(){
+    let images = document.querySelectorAll(".a-img"); //get all image elements
+    images.forEach( el =>   //set attributes to stop parallx
+        el.setAttribute('data-rellax-speed', '0')
+    )
+    rellax.refresh();    //refresh rellax.js for new variables
 }
 
-//function for handling large screen actions
-function handleLargeScreen(multiplier){
-
-    //set multiplier as per animation speed setting
-    multiplier = multiplier * animationSpeedLarge;
-
-    //create array of images needing animated for column one
-    let leftColumnImages = document.querySelectorAll(".a-img:nth-child(3n+1)");
-
-    //create array of images needing animated for column three
-    let rightColumnImages = document.querySelectorAll(".a-img:nth-child(3n+3)");
-
-    // Pass off elements to parallax function
-    giveParallax( leftColumnImages, multiplier );
-    giveParallax( rightColumnImages, multiplier );
-
-}
-
-function giveParallax( movers, multiplier ){
-
-    //for loop to modify array of images in column three
-    movers.forEach( el =>
-    el.style.transform = `translateY(${multiplier}%)`
-);
-
-}
 
 //Throttle function pulled from
 //https://remysharp.com/2010/07/21/throttling-function-calls
@@ -125,4 +80,7 @@ function throttle(fn, threshhold, scope) {
 
 //event listener for scrolling events
 //throttle usage... throttle(function, interval)
-window.addEventListener("scroll", throttle(getlLocation, 500));
+window.addEventListener("resize", throttle(isState, 200));
+window.addEventListener("load", isState);
+
+
